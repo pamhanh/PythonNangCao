@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phần mềm Tính Lương</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .entry-row {
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+        <!-- Header -->
+        <div class="bg-indigo-600 p-6 text-white text-center">
+            <h1 class="text-2xl font-bold">Quản Lý & Tính Lương</h1>
+            <p class="text-indigo-100 mt-1">Tùy chỉnh lương riêng cho từng ngày</p>
+        </div>
+
+        <div class="p-6 space-y-6">
+            <!-- Cấu hình mặc định -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                <div>
+                    <label class="block text-sm font-semibold text-indigo-900 mb-1">Mức lương mặc định (VNĐ/h)</label>
+                    <input type="number" id="defaultHourlyRate" value="50000" class="w-full p-2.5 rounded-lg border border-indigo-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all" placeholder="Ví dụ: 50000">
+                </div>
+                <div class="flex items-end">
+                    <button onclick="addDateEntry()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        Thêm ngày làm việc
+                    </button>
+                </div>
+            </div>
+
+            <!-- Danh sách ngày -->
+            <div class="overflow-x-auto">
+                <div id="entriesContainer" class="space-y-3 min-w-[600px] md:min-w-full pb-4">
+                    <div class="text-center text-gray-400 py-8 italic" id="emptyMessage">
+                        Chưa có dữ liệu. Vui lòng bấm "Thêm ngày làm việc".
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phần cộng thêm và tổng kết -->
+            <div class="border-t pt-6 space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div class="flex-1">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Tiền cộng thêm / Thưởng cuối kỳ (VNĐ)</label>
+                        <input type="number" id="bonusAmount" value="0" class="w-full p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 outline-none transition-all" placeholder="0">
+                    </div>
+                    <div class="flex-1 flex items-end">
+                        <button onclick="calculateSalary()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-lg shadow-green-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                            </svg>
+                            Tính Tổng Lương
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Kết quả hiển thị -->
+                <div id="resultCard" class="hidden bg-slate-900 text-white p-6 rounded-2xl space-y-3 shadow-2xl">
+                    <div class="flex justify-between text-slate-400 border-b border-slate-700 pb-2">
+                        <span>Tổng số giờ làm:</span>
+                        <span id="displayTotalHours" class="font-bold text-white">0 giờ</span>
+                    </div>
+                    <div class="flex justify-between text-slate-400 border-b border-slate-700 pb-2">
+                        <span>Lương cơ bản (tổng các ngày):</span>
+                        <span id="displayBaseSalary" class="font-bold text-white">0 VNĐ</span>
+                    </div>
+                    <div class="flex justify-between text-slate-400 border-b border-slate-700 pb-2">
+                        <span>Khoản cộng thêm:</span>
+                        <span id="displayBonus" class="font-bold text-green-400">+0 VNĐ</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-2">
+                        <span class="text-lg font-medium text-slate-300">TỔNG THỰC NHẬN:</span>
+                        <span id="displayFinalTotal" class="text-3xl font-black text-yellow-400">0 VNĐ</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let entryCount = 0;
+
+        function formatMoney(amount) {
+            return new Intl.NumberFormat('vi-VN').format(amount) + ' VNĐ';
+        }
+
+        function addDateEntry() {
+            entryCount++;
+            const container = document.getElementById('entriesContainer');
+            const emptyMessage = document.getElementById('emptyMessage');
+            const defaultRate = document.getElementById('defaultHourlyRate').value || 0;
+            
+            if (emptyMessage) emptyMessage.style.display = 'none';
+
+            const today = new Date().toISOString().split('T')[0];
+
+            const div = document.createElement('div');
+            div.id = `entry-${entryCount}`;
+            div.className = 'entry-row flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-xl shadow-sm hover:border-indigo-300 transition-all';
+            
+            div.innerHTML = `
+                <div class="w-1/4">
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Ngày làm</label>
+                    <input type="date" value="${today}" class="date-input w-full p-2 text-sm border rounded-lg focus:ring-1 focus:ring-indigo-400 outline-none">
+                </div>
+                <div class="w-1/4">
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Số giờ</label>
+                    <input type="number" placeholder="0" step="0.5" class="hour-input w-full p-2 text-sm border rounded-lg focus:ring-1 focus:ring-indigo-400 outline-none">
+                </div>
+                <div class="w-1/3">
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Lương/giờ (VNĐ)</label>
+                    <input type="number" value="${defaultRate}" class="rate-input w-full p-2 text-sm border rounded-lg focus:ring-1 focus:ring-indigo-400 outline-none bg-indigo-50/50">
+                </div>
+                <div class="flex-none pt-4">
+                    <button onclick="removeEntry(${entryCount})" class="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                </div>
+            `;
+            
+            container.appendChild(div);
+        }
+
+        function removeEntry(id) {
+            const entry = document.getElementById(`entry-${id}`);
+            if (entry) {
+                entry.style.opacity = '0';
+                entry.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    entry.remove();
+                    const container = document.getElementById('entriesContainer');
+                    const rows = container.querySelectorAll('.entry-row');
+                    if (rows.length === 0) {
+                        document.getElementById('emptyMessage').style.display = 'block';
+                    }
+                }, 200);
+            }
+        }
+
+        function calculateSalary() {
+            const bonusAmount = parseFloat(document.getElementById('bonusAmount').value) || 0;
+            const entries = document.querySelectorAll('.entry-row');
+            
+            let totalHours = 0;
+            let totalBaseSalary = 0;
+
+            entries.forEach(row => {
+                const hours = parseFloat(row.querySelector('.hour-input').value) || 0;
+                const rate = parseFloat(row.querySelector('.rate-input').value) || 0;
+                
+                totalHours += hours;
+                totalBaseSalary += (hours * rate);
+            });
+
+            const finalTotal = totalBaseSalary + bonusAmount;
+
+            // Hiển thị kết quả
+            document.getElementById('displayTotalHours').innerText = `${totalHours} giờ`;
+            document.getElementById('displayBaseSalary').innerText = formatMoney(totalBaseSalary);
+            document.getElementById('displayBonus').innerText = `+${formatMoney(bonusAmount)}`;
+            document.getElementById('displayFinalTotal').innerText = formatMoney(finalTotal);
+
+            const resultCard = document.getElementById('resultCard');
+            resultCard.classList.remove('hidden');
+            resultCard.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+    </script>
+</body>
+</html>

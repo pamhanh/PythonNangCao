@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Payroll Pro - Quản lý lương thông minh</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap");
+      body {
+        font-family: "Plus Jakarta Sans", sans-serif;
+        background-color: #f8fafc;
+      }
+      .custom-shadow {
+        box-shadow:
+          0 10px 15px -3px rgba(0, 0, 0, 0.05),
+          0 4px 6px -2px rgba(0, 0, 0, 0.02);
+      }
+      .entry-card {
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .entry-card:hover {
+        transform: translateY(-2px);
+        border-color: #6366f1;
+      }
+    </style>
+  </head>
+  <body class="pb-20">
+    <!-- Header Navigation -->
+    <nav class="bg-white border-b sticky top-0 z-50">
+      <div
+        class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between"
+      >
+        <div class="flex items-center gap-2">
+          <div class="bg-indigo-600 p-2 rounded-lg">
+            <svg
+              class="w-6 h-6 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
+            </svg>
+          </div>
+          <span
+            class="font-extrabold text-xl tracking-tight text-gray-800 uppercase"
+            >Payroll<span class="text-indigo-600">Pro</span></span
+          >
+        </div>
+        <div class="hidden md:block text-sm text-gray-500 font-medium italic">
+          Sản xuất bởi [PhamHaiAnh]
+        </div>
+      </div>
+    </nav>
+
+    <div
+      class="max-w-6xl mx-auto px-4 mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8"
+    >
+      <!-- Left Column: Inputs & Controls -->
+      <div class="lg:col-span-2 space-y-6">
+        <!-- Quick Actions -->
+        <div
+          class="bg-white p-6 rounded-2xl custom-shadow border border-gray-100"
+        >
+          <div class="flex flex-wrap gap-3">
+            <button
+              onclick="addEntry()"
+              class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-indigo-100"
+            >
+              <span>+ Thêm 1 ngày</span>
+            </button>
+            <button
+              onclick="bulkAdd(7)"
+              class="bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-50 px-5 py-2.5 rounded-xl font-bold transition-all"
+            >
+              ⚡ Thêm nhanh 1 tuần
+            </button>
+            <button
+              onclick="clearAll()"
+              class="ml-auto text-gray-400 hover:text-red-500 px-3 py-2 rounded-lg transition-colors text-sm font-medium"
+            >
+              Xóa tất cả
+            </button>
+          </div>
+        </div>
+
+        <!-- Entries List -->
+        <div id="entriesContainer" class="space-y-4">
+          <!-- Entries will be injected here -->
+        </div>
+
+        <!-- Bottom Add Button -->
+        <button
+          onclick="addEntry()"
+          class="w-full py-6 border-2 border-dashed border-gray-200 rounded-2xl text-gray-400 hover:border-indigo-300 hover:text-indigo-500 hover:bg-indigo-50/30 transition-all font-bold flex flex-col items-center gap-2"
+        >
+          <svg
+            class="w-8 h-8"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v16m8-8H4"
+            ></path>
+          </svg>
+          Bấm vào đây để thêm ngày mới
+        </button>
+      </div>
+
+      <!-- Right Column: Statistics & Summary -->
+      <div class="lg:col-span-1">
+        <div class="sticky top-24 space-y-6">
+          <!-- Summary Card -->
+          <div
+            class="bg-gray-900 rounded-3xl p-6 text-white custom-shadow overflow-hidden relative"
+          >
+            <div
+              class="absolute -top-10 -right-10 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl"
+            ></div>
+            <h2
+              class="text-gray-400 text-xs font-bold uppercase tracking-widest mb-4"
+            >
+              Tổng kết kỳ lương
+            </h2>
+
+            <div class="space-y-4 relative z-10">
+              <div>
+                <p class="text-sm text-gray-400">Tổng số thực nhận</p>
+                <h3
+                  id="statFinalTotal"
+                  class="text-4xl font-black text-yellow-400"
+                >
+                  0 VNĐ
+                </h3>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-800">
+                <div>
+                  <p class="text-[10px] text-gray-500 uppercase font-bold">
+                    Tổng giờ
+                  </p>
+                  <p id="statTotalHours" class="text-lg font-bold">0h</p>
+                </div>
+                <div>
+                  <p class="text-[10px] text-gray-500 uppercase font-bold">
+                    Ngày làm
+                  </p>
+                  <p id="statTotalDays" class="text-lg font-bold">0 ngày</p>
+                </div>
+              </div>
+
+              <div class="pt-2">
+                <label
+                  class="block text-[10px] text-gray-500 uppercase font-bold mb-1"
+                  >Cộng thêm/Thưởng</label
+                >
+                <input
+                  type="number"
+                  id="globalBonus"
+                  oninput="refreshUI()"
+                  value="0"
+                  class="w-full bg-gray-800 border-none rounded-lg p-2 text-green-400 font-bold focus:ring-1 focus:ring-green-500 outline-none"
+                  placeholder="Nhập thưởng..."
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Rate Breakdown (New Feature) -->
+          <div
+            class="bg-white rounded-2xl p-6 custom-shadow border border-gray-100"
+          >
+            <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <svg
+                class="w-5 h-5 text-indigo-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                ></path>
+              </svg>
+              Phân tích mức lương
+            </h3>
+            <div id="breakdownContainer" class="space-y-3">
+              <p class="text-sm text-gray-400 italic">
+                Chưa có dữ liệu thống kê...
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let entries = [];
+      let idCounter = 0;
+
+      // Khởi tạo mặc định
+      window.onload = () => {
+        bulkAdd(7); // Tự động tạo 7 ngày đầu tiên cho đỡ trống
+      };
+
+      function formatVND(amount) {
+        return new Intl.NumberFormat("vi-VN").format(amount) + " VNĐ";
+      }
+
+      function addEntry(customData = null) {
+        idCounter++;
+        const lastEntry = entries[entries.length - 1];
+
+        // Logic lấy ngày tiếp theo
+        let newDate = new Date().toISOString().split("T")[0];
+        if (lastEntry) {
+          let d = new Date(lastEntry.date);
+          d.setDate(d.getDate() + 1);
+          newDate = d.toISOString().split("T")[0];
+        }
+
+        const newEntry = {
+          id: idCounter,
+          date: customData?.date || newDate,
+          hours: customData?.hours || 0,
+          rate: customData?.rate || 35000,
+        };
+
+        entries.push(newEntry);
+        renderEntries();
+      }
+
+      function bulkAdd(count) {
+        let lastDate =
+          entries.length > 0
+            ? new Date(entries[entries.length - 1].date)
+            : new Date();
+        if (entries.length === 0) lastDate.setDate(lastDate.getDate() - 1);
+
+        for (let i = 0; i < count; i++) {
+          lastDate.setDate(lastDate.getDate() + 1);
+          addEntry({
+            date: lastDate.toISOString().split("T")[0],
+            hours: 4,
+            rate: 5000,
+          });
+        }
+      }
+
+      function cloneEntry(id) {
+        const index = entries.findIndex((e) => e.id === id);
+        if (index !== -1) {
+          const source = entries[index];
+          const newEntry = { ...source, id: ++idCounter };
+          // Chỉnh ngày lên +1
+          let d = new Date(source.date);
+          d.setDate(d.getDate() + 1);
+          newEntry.date = d.toISOString().split("T")[0];
+
+          entries.splice(index + 1, 0, newEntry);
+          renderEntries();
+        }
+      }
+
+      function removeEntry(id) {
+        entries = entries.filter((e) => e.id !== id);
+        renderEntries();
+      }
+
+      function updateEntry(id, field, value) {
+        const entry = entries.find((e) => e.id === id);
+        if (entry) {
+          entry[field] = field === "date" ? value : parseFloat(value) || 0;
+          refreshUI(); // Chỉ cập nhật số liệu, không render lại toàn bộ để tránh mất focus
+          updateSingleRowTotal(id);
+        }
+      }
+
+      function updateSingleRowTotal(id) {
+        const entry = entries.find((e) => e.id === id);
+        const el = document.getElementById(`row-total-${id}`);
+        if (el && entry) {
+          el.innerText = formatVND(entry.hours * entry.rate);
+        }
+      }
+
+      function clearAll() {
+        if (confirm("Bạn có chắc chắn muốn xóa tất cả dữ liệu?")) {
+          entries = [];
+          renderEntries();
+        }
+      }
+
+      function renderEntries() {
+        const container = document.getElementById("entriesContainer");
+        container.innerHTML = "";
+
+        entries.forEach((entry) => {
+          const card = document.createElement("div");
+          card.className =
+            "entry-card bg-white p-4 rounded-2xl custom-shadow border border-transparent flex flex-wrap md:flex-nowrap items-center gap-4";
+          card.innerHTML = `
+                    <div class="flex-1 min-w-[140px]">
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Ngày làm việc</label>
+                        <input type="date" value="${entry.date}" onchange="updateEntry(${entry.id}, 'date', this.value)" 
+                            class="w-full font-semibold text-gray-700 outline-none focus:text-indigo-600">
+                    </div>
+                    <div class="w-24">
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Số giờ</label>
+                        <input type="number" step="0.5" value="${entry.hours}" oninput="updateEntry(${entry.id}, 'hours', this.value)"
+                            class="w-full font-bold text-gray-700 outline-none focus:text-indigo-600 bg-gray-50 rounded-lg p-1 px-2">
+                    </div>
+                    <div class="w-32">
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Lương / Giờ</label>
+                        <input type="number" step="1000" value="${entry.rate}" oninput="updateEntry(${entry.id}, 'rate', this.value)"
+                            class="w-full font-bold text-gray-700 outline-none focus:text-indigo-600 bg-gray-50 rounded-lg p-1 px-2">
+                    </div>
+                    <div class="flex-1 text-right min-w-[120px]">
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 text-right">Thành tiền</label>
+                        <p id="row-total-${entry.id}" class="font-extrabold text-indigo-600 text-lg">${formatVND(entry.hours * entry.rate)}</p>
+                    </div>
+                    <div class="flex gap-2 pl-4 border-l border-gray-100">
+                        <button onclick="cloneEntry(${entry.id})" class="p-2 text-blue-400 hover:bg-blue-50 rounded-lg transition-colors" title="Sao chép ngày">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
+                        </button>
+                        <button onclick="removeEntry(${entry.id})" class="p-2 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </div>
+                `;
+          container.appendChild(card);
+        });
+        refreshUI();
+      }
+
+      function refreshUI() {
+        let totalHours = 0;
+        let totalMoney = 0;
+        let rateMap = {};
+
+        entries.forEach((e) => {
+          totalHours += e.hours;
+          totalMoney += e.hours * e.rate;
+
+          // Gom nhóm theo mức lương
+          if (!rateMap[e.rate]) rateMap[e.rate] = { count: 0, total: 0 };
+          rateMap[e.rate].count++;
+          rateMap[e.rate].total += e.hours * e.rate;
+        });
+
+        const bonus =
+          parseFloat(document.getElementById("globalBonus").value) || 0;
+        const finalTotal = totalMoney + bonus;
+
+        // Cập nhật thẻ Summary
+        document.getElementById("statTotalHours").innerText = totalHours + "h";
+        document.getElementById("statTotalDays").innerText = entries.length;
+        document.getElementById("statFinalTotal").innerText =
+          formatVND(finalTotal);
+
+        // Cập nhật Breakdown
+        const breakdownContainer =
+          document.getElementById("breakdownContainer");
+        if (entries.length === 0) {
+          breakdownContainer.innerHTML =
+            '<p class="text-sm text-gray-400 italic">Chưa có dữ liệu thống kê...</p>';
+          return;
+        }
+
+        breakdownContainer.innerHTML = "";
+        // Sắp xếp các mức lương giảm dần
+        const sortedRates = Object.keys(rateMap).sort((a, b) => b - a);
+
+        sortedRates.forEach((rate) => {
+          const item = rateMap[rate];
+          const div = document.createElement("div");
+          div.className =
+            "flex justify-between items-center p-3 bg-indigo-50/50 rounded-xl border border-indigo-100/50";
+          div.innerHTML = `
+                    <div>
+                        <p class="text-sm font-bold text-gray-800">${formatVND(rate)} <span class="text-[10px] text-indigo-400 font-normal">/ giờ</span></p>
+                        <p class="text-xs text-indigo-500 font-medium">${item.count} ngày làm việc</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm font-black text-indigo-700">${formatVND(item.total)}</p>
+                    </div>
+                `;
+          breakdownContainer.appendChild(div);
+        });
+      }
+    </script>
+  </body>
+</html>
